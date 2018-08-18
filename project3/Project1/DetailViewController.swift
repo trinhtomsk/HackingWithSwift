@@ -2,70 +2,45 @@
 //  DetailViewController.swift
 //  Project1
 //
-//  Created by Hudzilla on 13/09/2015.
-//  Copyright © 2015 Paul Hudson. All rights reserved.
+//  Created by TwoStraws on 12/08/2016.
+//  Copyright © 2016 Paul Hudson. All rights reserved.
 //
 
-import Social
 import UIKit
 
 class DetailViewController: UIViewController {
+	@IBOutlet var imageView: UIImageView!
+	var selectedImage: String?
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
 
-	@IBOutlet weak var detailImageView: UIImageView!
+		title = selectedImage
+        navigationItem.largeTitleDisplayMode = .never
+		navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .action, target: self, action: #selector(shareTapped))
 
-
-	var detailItem: String? {
-		didSet {
-		    // Update the view.
-		    self.configureView()
+		if let imageToLoad = selectedImage {
+			imageView.image  = UIImage(named: imageToLoad)
 		}
-	}
+    }
 
-	func configureView() {
-		// Update the user interface for the detail item.
-		if let detail = self.detailItem {
-			if let imageView = self.detailImageView {
-				imageView.image = UIImage(named: detail)
-			}
-		}
-	}
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.hidesBarsOnTap = true
+    }
 
-	override func viewDidLoad() {
-		super.viewDidLoad()
-		// Do any additional setup after loading the view, typically from a nib.
-		self.configureView()
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.hidesBarsOnTap = false
+    }
 
-		navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "shareTapped")
-	}
+    override func prefersHomeIndicatorAutoHidden() -> Bool {
+        return navigationController!.hidesBarsOnTap
+    }
 
-	override func didReceiveMemoryWarning() {
-		super.didReceiveMemoryWarning()
-		// Dispose of any resources that can be recreated.
-	}
-
-	override func viewWillAppear(animated: Bool) {
-		super.viewWillAppear(animated)
-		navigationController?.hidesBarsOnTap = true
-	}
-
-	override func viewWillDisappear(animated: Bool) {
-		super.viewWillDisappear(animated)
-		navigationController?.hidesBarsOnTap = false
-	}
-
-	func shareTapped() {
-		let vc = UIActivityViewController(activityItems: [detailImageView.image!], applicationActivities: [])
+	@objc func shareTapped() {
+		let vc = UIActivityViewController(activityItems: [imageView.image!], applicationActivities: [])
 		vc.popoverPresentationController?.barButtonItem = navigationItem.rightBarButtonItem
-		presentViewController(vc, animated: true, completion: nil)
+		present(vc, animated: true)
 	}
-
-//	func shareTapped() {
-//		let vc = SLComposeViewController(forServiceType: SLServiceTypeFacebook)
-//		vc.setInitialText("Look at this great picture!")
-//		vc.addImage(detailImageView.image!)
-//		vc.addURL(NSURL(string: "http://www.photolib.noaa.gov/nssl"))
-//		presentViewController(vc, animated: true, completion: nil)
-//	}
 }
-

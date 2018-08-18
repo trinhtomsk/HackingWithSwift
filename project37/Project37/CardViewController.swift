@@ -2,7 +2,7 @@
 //  CardViewController.swift
 //  Project37
 //
-//  Created by Hudzilla on 06/01/2016.
+//  Created by TwoStraws on 25/08/2016.
 //  Copyright © 2016 Paul Hudson. All rights reserved.
 //
 
@@ -20,61 +20,56 @@ class CardViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 
-		view.bounds = CGRectMake(0, 0, 100, 140)
+		view.bounds = CGRect(x: 0, y: 0, width: 100, height: 140)
 		front = UIImageView(image: UIImage(named: "cardBack"))
 		back = UIImageView(image: UIImage(named: "cardBack"))
 
 		view.addSubview(front)
 		view.addSubview(back)
 
-		front.hidden = true
+		front.isHidden = true
 		back.alpha = 0
 
-		UIView.animateWithDuration(0.2) {
+		UIView.animate(withDuration: 0.2) {
 			self.back.alpha = 1
 		}
 
-		let tap = UITapGestureRecognizer(target: self, action: "cardTapped")
-		back.userInteractionEnabled = true
-		back.addGestureRecognizer(tap)
+		let tap = UITapGestureRecognizer(target: self, action: #selector(cardTapped))
+		view.isUserInteractionEnabled = true
+		view.addGestureRecognizer(tap)
 
-		performSelector("wiggle", withObject: nil, afterDelay: 1)
+		perform(#selector(wiggle), with: nil, afterDelay: 1)
 	}
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-    
-	func cardTapped() {
+	@objc func cardTapped() {
 		delegate.cardTapped(self)
 	}
 
-	func wasTapped() {
-		UIView.transitionWithView(view, duration: 0.7, options: [.TransitionFlipFromRight], animations: { [unowned self] in
-			self.back.hidden = true
-			self.front.hidden = false
-		}, completion: nil)
-	}
-
-	func wasntTapped() {
-		UIView.animateWithDuration(0.7) {
-			self.view.transform = CGAffineTransformMakeScale(0.00001, 0.00001)
+	@objc func wasntTapped() {
+		UIView.animate(withDuration: 0.7) {
+			self.view.transform = CGAffineTransform(scaleX: 0.00001, y: 0.00001)
 			self.view.alpha = 0
 		}
 	}
 
-	func wiggle() {
-		if GKRandomSource.sharedRandom().nextIntWithUpperBound(4) == 1 {
-			UIView.animateWithDuration(0.2, delay: 0, options: .AllowUserInteraction, animations: {
-				self.back.transform = CGAffineTransformMakeScale(1.01, 1.01);
-				}) { _ in
-					self.back.transform = CGAffineTransformIdentity;
+	func wasTapped() {
+		UIView.transition(with: view, duration: 0.7, options: [.transitionFlipFromRight], animations: { [unowned self] in
+			self.back.isHidden = true
+			self.front.isHidden = false
+		})
+	}
+
+	@objc func wiggle() {
+		if GKRandomSource.sharedRandom().nextInt(upperBound: 4) == 1 {
+			UIView.animate(withDuration: 0.2, delay: 0, options: .allowUserInteraction, animations: {
+				self.back.transform = CGAffineTransform(scaleX: 1.01, y: 1.01)
+			}) { _ in
+				self.back.transform = CGAffineTransform.identity
 			}
 
-			performSelector("wiggle", withObject: nil, afterDelay: 8)
+			perform(#selector(wiggle), with: nil, afterDelay: 8)
 		} else {
-			performSelector("wiggle", withObject: nil, afterDelay: 2)
+			perform(#selector(wiggle), with: nil, afterDelay: 2)
 		}
 	}
 }

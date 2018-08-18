@@ -2,15 +2,15 @@
 //  ViewController.swift
 //  Project31
 //
-//  Created by Hudzilla on 18/09/2015.
-//  Copyright © 2015 Paul Hudson. All rights reserved.
+//  Created by TwoStraws on 23/08/2016.
+//  Copyright © 2016 Paul Hudson. All rights reserved.
 //
 
 import UIKit
 
 class ViewController: UIViewController, UIWebViewDelegate, UITextFieldDelegate, UIGestureRecognizerDelegate {
-	@IBOutlet weak var addressBar: UITextField!
-	@IBOutlet weak var stackView: UIStackView!
+	@IBOutlet var addressBar: UITextField!
+	@IBOutlet var stackView: UIStackView!
 
 	weak var activeWebView: UIWebView?
 
@@ -19,8 +19,8 @@ class ViewController: UIViewController, UIWebViewDelegate, UITextFieldDelegate, 
 
 		setDefaultTitle()
 
-		let add = UIBarButtonItem(barButtonSystemItem: .Add, target: self, action: "addWebView")
-		let delete = UIBarButtonItem(barButtonSystemItem: .Trash, target: self, action: "deleteWebView")
+		let add = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addWebView))
+		let delete = UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(deleteWebView))
 		navigationItem.rightBarButtonItems = [delete, add]
 	}
 
@@ -28,59 +28,27 @@ class ViewController: UIViewController, UIWebViewDelegate, UITextFieldDelegate, 
 		title = "Multibrowser"
 	}
 
-	func addWebView() {
+	@objc func addWebView() {
 		let webView = UIWebView()
 		webView.delegate = self
 
 		stackView.addArrangedSubview(webView)
 
-		let url = NSURL(string: "https://www.hackingwithswift.com")!
-		webView.loadRequest(NSURLRequest(URL: url))
+		let url = URL(string: "https://www.hackingwithswift.com")!
+		webView.loadRequest(URLRequest(url: url))
 
-		webView.layer.borderColor = UIColor.blueColor().CGColor
+		webView.layer.borderColor = UIColor.blue.cgColor
 		selectWebView(webView)
 
-		let recognizer = UITapGestureRecognizer(target: self, action: "webViewTapped:")
+		let recognizer = UITapGestureRecognizer(target: self, action: #selector(webViewTapped))
 		recognizer.delegate = self
 		webView.addGestureRecognizer(recognizer)
 	}
 
-	func selectWebView(webView: UIWebView) {
-		for view in stackView.arrangedSubviews {
-			view.layer.borderWidth = 0
-		}
-
-		activeWebView = webView
-		webView.layer.borderWidth = 3
-
-		updateUIUsingWebView(webView)
-	}
-
-	func webViewTapped(recognizer: UITapGestureRecognizer) {
-		if let selectedWebView = recognizer.view as? UIWebView {
-			selectWebView(selectedWebView)
-		}
-	}
-
-	func gestureRecognizer(gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-		return true
-	}
-
-	func textFieldShouldReturn(textField: UITextField) -> Bool {
-		if let webView = activeWebView, address = addressBar.text {
-			if let url = NSURL(string: address) {
-				webView.loadRequest(NSURLRequest(URL: url))
-			}
-		}
-
-		textField.resignFirstResponder()
-		return true
-	}
-
-	func deleteWebView() {
+	@objc func deleteWebView() {
 		// safely unwrap our webview
 		if let webView = activeWebView {
-			if let index = stackView.arrangedSubviews.indexOf(webView) {
+			if let index = stackView.arrangedSubviews.index(of: webView) {
 				// we found the current webview in the stack view! Remove it from the stack view
 				stackView.removeArrangedSubview(webView)
 
@@ -108,22 +76,54 @@ class ViewController: UIViewController, UIWebViewDelegate, UITextFieldDelegate, 
 		}
 	}
 
-	override func traitCollectionDidChange(previousTraitCollection: UITraitCollection?) {
-		if traitCollection.horizontalSizeClass == .Compact {
-			stackView.axis = .Vertical
-		} else {
-			stackView.axis = .Horizontal
+	func selectWebView(_ webView: UIWebView) {
+		for view in stackView.arrangedSubviews {
+			view.layer.borderWidth = 0
+		}
+
+		activeWebView = webView
+		webView.layer.borderWidth = 3
+
+		updateUI(for: webView)
+	}
+
+	@objc func webViewTapped(_ recognizer: UITapGestureRecognizer) {
+		if let selectedWebView = recognizer.view as? UIWebView {
+			selectWebView(selectedWebView)
 		}
 	}
 
-	func updateUIUsingWebView(webView: UIWebView) {
-		title = webView.stringByEvaluatingJavaScriptFromString("document.title")
-		addressBar.text = webView.request?.URL?.absoluteString ?? ""
+	func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+		return true
 	}
 
-	func webViewDidFinishLoad(webView: UIWebView) {
+	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+		if let webView = activeWebView, let address = addressBar.text {
+			if let url = URL(string: address) {
+				webView.loadRequest(URLRequest(url: url))
+			}
+		}
+
+		textField.resignFirstResponder()
+		return true
+	}
+
+	override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+		if traitCollection.horizontalSizeClass == .compact {
+			stackView.axis = .vertical
+		} else {
+			stackView.axis = .horizontal
+		}
+	}
+
+	func updateUI(for webView: UIWebView) {
+		title = webView.stringByEvaluatingJavaScript(from: "document.title")
+		addressBar.text = webView.request?.url?.absoluteString ?? ""
+	}
+
+	func webViewDidFinishLoad(_ webView: UIWebView) {
 		if webView == activeWebView {
-			updateUIUsingWebView(webView)
+			updateUI(for: webView)
 		}
 	}
 }
